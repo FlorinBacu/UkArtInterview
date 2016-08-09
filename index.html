@@ -1,0 +1,97 @@
+<html>
+	<head>
+		<title>
+			ARTICLE REST
+		</title>
+	</head>
+	<body onload="RenderArticles()">
+		<p>search:<input type="text" onkeyup="search(event)" /></p>
+		<p>topic:<input type="text" id="topic_add"/></p>
+		<p>content:</p>
+		<p><textarea id="content_add">
+				
+			</textarea></p>
+		<p>url:article/<input type="text" id="url_add"/>.html</p>
+		<button onclick="add_article()">add article</button>
+		<div id="RendArt">
+			
+		</div>
+		<script>
+			function search(evt)
+			{
+				var query=evt.target.value;
+				RenderArticles(true,query);
+				
+			}
+			function AjaxRequest(doc,method,func,param) {
+				  var xhttp = new XMLHttpRequest();
+				  xhttp.onreadystatechange = function() {
+					if (xhttp.readyState == 4 && xhttp.status == 200) {
+					 	func(xhttp);
+					}
+				
+				  };
+			  xhttp.open(method, doc, true);
+		      xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			  xhttp.send(param);
+			}
+			function RenderArticles(s=false,query)
+			{
+				var param="";
+				if(s)
+				{
+					param="?search="+s+"&query="+query;
+				}
+				AjaxRequest("select_article.php"+param,"GET",function(xhttp)
+					{
+						var render=document.getElementById("RendArt");
+						parser = new DOMParser();
+						xmlDoc = parser.parseFromString(xhttp.response,"text/xml");
+						if(xmlDoc.getElementsByTagName("parsererror").length>0)
+						{
+							alert("parse error XML");
+							return;
+						}
+						var items=xmlDoc.getElementsByTagName('item');
+						var i;
+						var topic,url,content,anchor,rel;
+						var len_items=items.length;
+						render.innerHTML="";
+						for(i=0;i<len_items;i++)
+						{
+							topic=document.createElement("h1");
+							topic.innerHTML=items[i].getAttribute("topic");
+							render.appendChild(topic);
+							content=document.createElement("h2");
+							content.innerHTML=items[i].childNodes[0].nodeValue;
+							render.appendChild(content);
+							url=document.createElement("h3");
+							anchor=document.createElement("a");
+							url.appendChild(anchor);
+							anchor.setAttribute("href","article/"+items[i].getAttribute("url")+".html");
+							anchor.innerHTML="article/"+items[i].getAttribute("url")+".html";
+							render.appendChild(url);
+							if(items[i].getAttribute("rel")!==null)
+							{
+								rel=document.createElement("h3");
+								rel.innerHTML="relevancy:"+parseFloat(items[i].getAttribute("rel")).toFixed(2)+"%";
+								render.appendChild(rel);
+							}
+						}
+				
+						
+					},"")
+			}
+			function add_article()
+			{
+				var topic=document.getElementById("topic_add").value;
+				var content=document.getElementById("content_add").value;
+				var url=document.getElementById("url_add").value;
+				AjaxRequest("create_article.php","POST",function(){
+					RenderArticles();
+				},encodeURI("topic="+topic+"&content="+content+"&url="+url));
+				
+			}
+		</script>
+	</body>
+</html>
