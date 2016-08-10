@@ -7,12 +7,12 @@
 		$search=$_GET["search"];
 		$query=$_GET['query'];
 		$condition="WHERE MATCH (`content`) AGAINST ('".$query."')";
-		$columns="MATCH (`content`) AGAINST ('".$query."') as rel,topic,content,url";
+		$columns="MATCH (`content`) AGAINST ('".$query."') as rel,topic,content,url";//transform query into a search query
 	}
 	$qrt=$con->query("SELECT ".$columns." FROM Article ".$condition);
 	$doc=new DOMDocument;
 	$arts=$doc->createElement("articles");
-	while($row_art=$qrt->fetch_object())
+	while($row_art=$qrt->fetch_object())//write html content for article
 	{
 		$art=$doc->createElement("item");
 		$art->setAttribute("topic",$row_art->topic);
@@ -25,4 +25,4 @@
 		$arts->appendChild($art);
 		
 	}
-	echo $doc->saveXML($arts);
+	echo $doc->saveXML($arts);//output the xml content

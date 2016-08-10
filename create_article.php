@@ -5,7 +5,7 @@
 	$url=$_POST['url'];
 
 	$con->query("insert into Article (topic,content,url) VALUES ('".$topic."','".$content."','".$url."')");
-	$doc_art=new DOMDocument;
+	$doc_art=new DOMDocument;//from here we write and create html file for specified url
 	$html=$doc_art->createElement("html");
 	$head=$doc_art->createElement("head");
 	$title=$doc_art->createElement("title");
